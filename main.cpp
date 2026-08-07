@@ -68,16 +68,32 @@ arrow::Result<std::vector<sift::Event>> read_events(
     return events;
 }
 
-std::map<std::string, std::size_t> count_exports_by_entity(
-    std::span<const sift::Event> events,
-    std::chrono::sys_time<std::chrono::milliseconds> start,
-    std::chrono::sys_time<std::chrono::milliseconds> end) {
-    std::map<std::string, std::size_t> counts;
+using DailyExportCounts =
+    std::map<std::string, std::map<std::chrono::sys_days, std::size_t>>;
+
+DailyExportCounts count_daily_exports(std::span<const sift::Event> events) {
+    DailyExportCounts counts;
+    std::map<std::string,
+             std::pair<std::chrono::sys_days, std::chrono::sys_days>> spans;
+
     for (const auto& event : events) {
-        auto& count = counts[event.primary_entity_id];
-        if (event.event_type == "export" &&
-            event.timestamp >= start && event.timestamp <= end) {
+        const auto day = std::chrono::floor<std::chrono::days>(event.timestamp);
+        auto [span, inserted] = spans.try_emplace(
+            event.primary_entity_id, day, day);
+        if (!inserted) {
+            span->second.first = std::min(span->second.first, day);
+            span->second.second = std::max(span->second.second, day);
+        }
+        auto& count = counts[event.primary_entity_id][day];
+        if (event.event_type == "export") {
             ++count;
+        }
+    }
+
+    for (const auto& [entity_id, span] : spans) {
+        for (auto day = span.first; day <= span.second;
+             day += std::chrono::days{1}) {
+            counts[entity_id].try_emplace(day, 0);
         }
     }
     return counts;
@@ -134,15 +150,13 @@ int main(int argc, char* argv[]) {
     std::cout << schema->ToString() << '\n';
     std::cout << "events: " << events_result->size() << '\n';
     if (!events_result->empty()) {
-        const auto& events = *events_result;
-        auto end = events.front().timestamp;
-        for (const auto& event : events) {
-            end = std::max(end, event.timestamp);
-        }
-        const auto start = end - std::chrono::hours(24);
-        const auto counts = count_exports_by_entity(events, start, end);
-        for (const auto& [entity_id, count] : counts) {
-            std::cout << entity_id << " exports_24h: " << count << '\n';
+        const auto counts = count_daily_exports(*events_result);
+        for (const auto& [entity_id, daily_counts] : counts) {
+            std::cout << entity_id << " daily_exports:";
+            for (const auto& [day, count] : daily_counts) {
+                std::cout << ' ' << count;
+            }
+            std::cout << '\n';
         }
     }
     return 0;
