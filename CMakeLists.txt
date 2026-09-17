@@ -1,24 +1,38 @@
 cmake_minimum_required(VERSION 4.2)
 project(Sift)
-find_package(Arrow CONFIG REQUIRED)
-find_package(Parquet CONFIG REQUIRED)
-find_package(yaml-cpp CONFIG REQUIRED)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_executable(Sift main.cpp
+
+find_package(Arrow CONFIG REQUIRED)
+find_package(Parquet CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
+
+add_library(sift_core STATIC
         src/domain/event.hpp
-        src/ingestion/schema_mapping.hpp
-        src/ingestion/schema_validator.hpp
-        src/ingestion/schema_validator.cpp)
-target_link_libraries(Sift PRIVATE
+        src/ingestion/column_mapping.hpp
+        src/ingestion/column_mapping.cpp
+        src/ingestion/parquet_event_reader.hpp
+        src/ingestion/parquet_event_reader.cpp
+        src/storage/event_store.hpp
+        src/storage/event_store.cpp
+        src/analysis/daily_exports.hpp
+        src/analysis/daily_exports.cpp)
+target_include_directories(sift_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(sift_core PUBLIC
         Arrow::arrow_shared
         Parquet::parquet_shared
         yaml-cpp::yaml-cpp
 )
+
+add_executable(Sift main.cpp)
+target_link_libraries(Sift PRIVATE sift_core)
 
 add_executable(sift_fixture tests/fixtures/generate_events.cpp)
 target_link_libraries(sift_fixture PRIVATE
         Arrow::arrow_shared
         Parquet::parquet_shared
 )
+
+enable_testing()
+add_subdirectory(tests)
