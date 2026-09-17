@@ -57,7 +57,9 @@ int main(int argc, char* argv[]) {
     int usage_exit = -1;
     const std::string usage = run_capture(sift + " 2>&1", usage_exit);
     CHECK_EQ(usage_exit, 2);
-    CHECK_EQ(usage, std::string{"Usage: Sift <events.parquet> [config.yaml]\n"});
+    CHECK_EQ(usage,
+             std::string{"Usage: Sift <events.parquet> [config.yaml] "
+                         "[--analysis-mode native|jev]\n"});
 
     int config_exit = -1;
     const std::string bad_config =

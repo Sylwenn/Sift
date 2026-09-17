@@ -1,3 +1,12 @@
+add_executable(app_config_test app_config_test.cpp)
+target_link_libraries(app_config_test PRIVATE sift_core)
+add_test(NAME app_config
+        COMMAND app_config_test ${CMAKE_CURRENT_BINARY_DIR}/app_config_tmp)
+
+add_executable(cli_options_test cli_options_test.cpp)
+target_link_libraries(cli_options_test PRIVATE sift_core)
+add_test(NAME cli_options COMMAND cli_options_test)
+
 add_executable(column_mapping_test column_mapping_test.cpp)
 target_link_libraries(column_mapping_test PRIVATE sift_core)
 add_test(NAME column_mapping

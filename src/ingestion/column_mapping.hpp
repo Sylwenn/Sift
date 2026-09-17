@@ -7,6 +7,7 @@
 #include <arrow/result.h>
 #include <arrow/status.h>
 #include <arrow/type.h>
+#include <yaml-cpp/yaml.h>
 
 #include <string>
 
@@ -16,6 +17,8 @@ struct SchemaMapping {
     std::string event_type_column;
     std::string primary_entity_id_column;
 };
+
+arrow::Result<SchemaMapping> mapping_from_yaml(const YAML::Node& root);
 
 arrow::Result<SchemaMapping> load_mapping(const std::string& path);
 

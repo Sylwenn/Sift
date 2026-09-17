@@ -10,6 +10,10 @@ find_package(yaml-cpp CONFIG REQUIRED)
 
 add_library(sift_core STATIC
         src/domain/event.hpp
+        src/config/app_config.hpp
+        src/config/app_config.cpp
+        src/config/cli_options.hpp
+        src/config/cli_options.cpp
         src/ingestion/column_mapping.hpp
         src/ingestion/column_mapping.cpp
         src/ingestion/parquet_event_reader.hpp

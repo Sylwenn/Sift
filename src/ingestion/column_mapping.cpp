@@ -6,18 +6,21 @@
 #include <yaml-cpp/yaml.h>
 
 namespace sift {
+arrow::Result<SchemaMapping> mapping_from_yaml(const YAML::Node& config) {
+    if (!config.IsMap() || !config["timestamp"] ||
+        !config["event_type"] || !config["entity_id"]) {
+        return arrow::Status::Invalid(
+            "config must define timestamp, event_type, and entity_id");
+    }
+    return SchemaMapping{
+        config["timestamp"].as<std::string>(),
+        config["event_type"].as<std::string>(),
+        config["entity_id"].as<std::string>()};
+}
+
 arrow::Result<SchemaMapping> load_mapping(const std::string& path) {
     try {
-        const auto config = YAML::LoadFile(path);
-        if (!config.IsMap() || !config["timestamp"] ||
-            !config["event_type"] || !config["entity_id"]) {
-            return arrow::Status::Invalid(
-                "config must define timestamp, event_type, and entity_id");
-        }
-        return SchemaMapping{
-            config["timestamp"].as<std::string>(),
-            config["event_type"].as<std::string>(),
-            config["entity_id"].as<std::string>()};
+        return mapping_from_yaml(YAML::LoadFile(path));
     } catch (const YAML::Exception& error) {
         return arrow::Status::Invalid("failed to read config: ", error.what());
     }
