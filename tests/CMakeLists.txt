@@ -47,6 +47,12 @@ add_test(NAME cli_output
                 ${CMAKE_CURRENT_BINARY_DIR}/test_events.parquet
                 ${CMAKE_SOURCE_DIR}/sift.yaml)
 
+if(SIFT_ENABLE_JEV)
+    add_executable(jev_client_test jev_client_test.cpp)
+    target_link_libraries(jev_client_test PRIVATE sift_jev)
+    add_test(NAME jev_client COMMAND jev_client_test)
+endif()
+
 add_test(NAME generate_fixture
         COMMAND sift_fixture ${CMAKE_CURRENT_BINARY_DIR}/test_events.parquet)
 set_tests_properties(generate_fixture PROPERTIES FIXTURES_SETUP events_fixture)

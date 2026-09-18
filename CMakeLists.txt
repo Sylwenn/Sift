@@ -8,6 +8,9 @@ find_package(Arrow CONFIG REQUIRED)
 find_package(Parquet CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 
+option(SIFT_ENABLE_JEV "Build the TypeSafe Jev backend" OFF)
+option(SIFT_RUN_LIVE_JEV_TESTS "Register opt-in live Jev tests" OFF)
+
 add_library(sift_core STATIC
         src/domain/event.hpp
         src/config/app_config.hpp
@@ -36,8 +39,22 @@ target_link_libraries(sift_core PUBLIC
         yaml-cpp::yaml-cpp
 )
 
+if(SIFT_ENABLE_JEV)
+    find_package(CURL REQUIRED)
+    add_library(sift_jev STATIC
+            src/jev/jev_client.hpp
+            src/jev/jev_client.cpp
+            src/jev/curl_jev_transport.cpp)
+    target_link_libraries(sift_jev PUBLIC sift_core)
+    target_link_libraries(sift_jev PRIVATE CURL::libcurl)
+    target_compile_definitions(sift_jev PUBLIC SIFT_ENABLE_JEV=1)
+endif()
+
 add_executable(Sift main.cpp)
 target_link_libraries(Sift PRIVATE sift_core)
+if(SIFT_ENABLE_JEV)
+    target_link_libraries(Sift PRIVATE sift_jev)
+endif()
 
 add_executable(sift_fixture tests/fixtures/generate_events.cpp)
 target_link_libraries(sift_fixture PRIVATE
