@@ -57,6 +57,13 @@ if(SIFT_ENABLE_JEV)
     add_test(NAME jev_analysis COMMAND jev_analysis_test)
 endif()
 
+if(SIFT_ENABLE_JEV AND SIFT_RUN_LIVE_JEV_TESTS)
+    add_executable(jev_live_test jev_live_test.cpp)
+    target_link_libraries(jev_live_test PRIVATE sift_jev)
+    add_test(NAME jev_live COMMAND jev_live_test)
+    set_tests_properties(jev_live PROPERTIES LABELS jev-live)
+endif()
+
 add_test(NAME generate_fixture
         COMMAND sift_fixture ${CMAKE_CURRENT_BINARY_DIR}/test_events.parquet)
 set_tests_properties(generate_fixture PROPERTIES FIXTURES_SETUP events_fixture)

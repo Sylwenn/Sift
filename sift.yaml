@@ -1,3 +1,10 @@
 timestamp: occurred_at
 event_type: action
 entity_id: user_id
+
+analysis:
+  mode: native
+  # jev:
+  #   model: jev-1.13.0
+  #   timeout_ms: 10000
+  #   max_retries: 2
