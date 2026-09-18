@@ -21,7 +21,10 @@ add_library(sift_core STATIC
         src/storage/event_store.hpp
         src/storage/event_store.cpp
         src/analysis/daily_exports.hpp
-        src/analysis/daily_exports.cpp)
+        src/analysis/daily_exports.cpp
+        src/analysis/analysis_types.hpp
+        src/analysis/feature_extraction.hpp
+        src/analysis/feature_extraction.cpp)
 target_include_directories(sift_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sift_core PUBLIC
         Arrow::arrow_shared

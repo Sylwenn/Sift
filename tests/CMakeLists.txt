@@ -16,6 +16,10 @@ add_executable(event_store_test event_store_test.cpp)
 target_link_libraries(event_store_test PRIVATE sift_core)
 add_test(NAME event_store COMMAND event_store_test)
 
+add_executable(feature_extraction_test feature_extraction_test.cpp)
+target_link_libraries(feature_extraction_test PRIVATE sift_core)
+add_test(NAME feature_extraction COMMAND feature_extraction_test)
+
 add_executable(daily_exports_test daily_exports_test.cpp)
 target_link_libraries(daily_exports_test PRIVATE sift_core)
 add_test(NAME daily_exports COMMAND daily_exports_test)
