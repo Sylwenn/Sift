@@ -44,7 +44,9 @@ if(SIFT_ENABLE_JEV)
     add_library(sift_jev STATIC
             src/jev/jev_client.hpp
             src/jev/jev_client.cpp
-            src/jev/curl_jev_transport.cpp)
+            src/jev/curl_jev_transport.cpp
+            src/jev/jev_analysis.hpp
+            src/jev/jev_analysis.cpp)
     target_link_libraries(sift_jev PUBLIC sift_core)
     target_link_libraries(sift_jev PRIVATE CURL::libcurl)
     target_compile_definitions(sift_jev PUBLIC SIFT_ENABLE_JEV=1)

@@ -99,7 +99,8 @@ int main() {
                  std::string{"clear_departure_from_prior_observations"});
         CHECK_EQ(answer->probabilities.at("clear_departure_from_prior_observations"),
                  0.85);
-        CHECK_EQ(answer->confidence, 0.78);
+        CHECK(answer->confidence.has_value());
+        CHECK_EQ(*answer->confidence, 0.78);
         CHECK_EQ(answer->model, std::string{"jev-1.13.0"});
         CHECK_EQ(answer->request_id, std::string{"req-1"});
         CHECK_EQ(answer->usage.input_tokens, std::int64_t{312});

@@ -19,6 +19,10 @@ public:
     virtual arrow::Result<AnalysisResult> run(const AnalysisInput& input) const = 0;
 };
 
+// Copies the descriptive measurements of one snapshot into neutral
+// Measurement values. Shared by the native and Jev paths.
+std::vector<Measurement> standard_measurements(const EntityFeatureSnapshot& snapshot);
+
 // Produces one measurement-only item per entity. It does not select, score, or
 // rank findings.
 AnalysisResult run_native_analysis(const AnalysisInput& input);

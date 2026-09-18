@@ -51,6 +51,10 @@ if(SIFT_ENABLE_JEV)
     add_executable(jev_client_test jev_client_test.cpp)
     target_link_libraries(jev_client_test PRIVATE sift_jev)
     add_test(NAME jev_client COMMAND jev_client_test)
+
+    add_executable(jev_analysis_test jev_analysis_test.cpp)
+    target_link_libraries(jev_analysis_test PRIVATE sift_jev)
+    add_test(NAME jev_analysis COMMAND jev_analysis_test)
 endif()
 
 add_test(NAME generate_fixture

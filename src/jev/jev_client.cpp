@@ -165,11 +165,12 @@ arrow::Result<JevChoiceAnswer> parse_choice_answer(const std::string& body,
             return arrow::Status::Invalid(
                 "Jev choice confidence is not a number");
         }
-        parsed.confidence = answer["confidence"].get<double>();
-        if (parsed.confidence < 0.0 || parsed.confidence > 1.0) {
+        const auto confidence = answer["confidence"].get<double>();
+        if (confidence < 0.0 || confidence > 1.0) {
             return arrow::Status::Invalid(
                 "Jev choice confidence is outside [0, 1]");
         }
+        parsed.confidence = confidence;
     }
 
     if (document.contains("usage") && document["usage"].is_object()) {

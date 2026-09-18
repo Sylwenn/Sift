@@ -28,7 +28,7 @@ struct JevChoiceQuestion {
 struct JevChoiceAnswer {
     std::string selected_value;
     std::map<std::string, double> probabilities;
-    double confidence = 0.0;
+    std::optional<double> confidence;
     std::string model;
     std::string request_id;
     TokenUsage usage;

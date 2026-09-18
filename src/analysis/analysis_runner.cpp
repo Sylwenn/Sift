@@ -7,6 +7,37 @@
 
 namespace sift {
 
+std::vector<Measurement> standard_measurements(
+    const EntityFeatureSnapshot& snapshot) {
+    std::vector<Measurement> measurements;
+    const auto& values = snapshot.measurements;
+    measurements.push_back(
+        {"current_exports", static_cast<double>(values.current_exports)});
+    measurements.push_back({"prior_observation_count",
+                            static_cast<double>(values.prior_observation_count)});
+    if (values.prior_mean_exports) {
+        measurements.push_back({"prior_mean_exports", *values.prior_mean_exports});
+    }
+    if (values.prior_min_exports) {
+        measurements.push_back(
+            {"prior_min_exports", static_cast<double>(*values.prior_min_exports)});
+    }
+    if (values.prior_max_exports) {
+        measurements.push_back(
+            {"prior_max_exports", static_cast<double>(*values.prior_max_exports)});
+    }
+    if (values.current_vs_prior_mean_ratio) {
+        measurements.push_back({"current_vs_prior_mean_ratio",
+                                *values.current_vs_prior_mean_ratio});
+    }
+    if (values.current_minus_prior_max) {
+        measurements.push_back(
+            {"current_minus_prior_max",
+             static_cast<double>(*values.current_minus_prior_max)});
+    }
+    return measurements;
+}
+
 AnalysisResult run_native_analysis(const AnalysisInput& input) {
     AnalysisResult result;
     result.mode = AnalysisMode::native;
@@ -16,37 +47,7 @@ AnalysisResult run_native_analysis(const AnalysisInput& input) {
         AnalysisItem item;
         item.entity_id = snapshot.entity_id;
         item.window = snapshot.window;
-
-        const auto& measurements = snapshot.measurements;
-        item.measurements.push_back(
-            {"current_exports", static_cast<double>(measurements.current_exports)});
-        item.measurements.push_back(
-            {"prior_observation_count",
-             static_cast<double>(measurements.prior_observation_count)});
-        if (measurements.prior_mean_exports) {
-            item.measurements.push_back(
-                {"prior_mean_exports", *measurements.prior_mean_exports});
-        }
-        if (measurements.prior_min_exports) {
-            item.measurements.push_back(
-                {"prior_min_exports",
-                 static_cast<double>(*measurements.prior_min_exports)});
-        }
-        if (measurements.prior_max_exports) {
-            item.measurements.push_back(
-                {"prior_max_exports",
-                 static_cast<double>(*measurements.prior_max_exports)});
-        }
-        if (measurements.current_vs_prior_mean_ratio) {
-            item.measurements.push_back(
-                {"current_vs_prior_mean_ratio",
-                 *measurements.current_vs_prior_mean_ratio});
-        }
-        if (measurements.current_minus_prior_max) {
-            item.measurements.push_back(
-                {"current_minus_prior_max",
-                 static_cast<double>(*measurements.current_minus_prior_max)});
-        }
+        item.measurements = standard_measurements(snapshot);
 
         item.evidence.reserve(snapshot.supporting_event_indices.size());
         for (const auto index : snapshot.supporting_event_indices) {
