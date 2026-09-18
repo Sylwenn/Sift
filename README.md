@@ -1,10 +1,12 @@
 # Sift
 
-Sift is a local-first tool that analyzes application audit events and identifies unusual behavior. It ranks activity for human review and does not label users as malicious.
+Sift analyzes application audit events. It prepares behavior measurements for human review. It does not label users as malicious.
 
 ## Current prototype
 
-Sift reads Parquet events, maps source columns through YAML, validates the input schema, normalizes events, and computes deterministic per-entity export measurements. It then runs the selected analysis mode.
+Sift reads Parquet events and uses YAML to map source columns. It validates the input schema and normalizes the events. It then calculates deterministic export measurements for each entity.
+
+The native detection engine is still in development. The experimental Jev mode can send measurements to Jev.
 
 ## Build and run
 
@@ -17,7 +19,7 @@ cmake --build build
 ./build/Sift /tmp/sift-events.parquet sift.yaml
 ```
 
-The default mode is `native`. Native mode keeps the current output:
+Sift uses `native` mode by default. Native mode keeps the current output:
 
 ```text
 user-007 daily_exports: 4 4 4 4 4 4 4 4 4 4
@@ -33,44 +35,48 @@ analysis:
   mode: native
 ```
 
-Or override it on the command line:
+Use `--analysis-mode` to override the YAML value:
 
 ```bash
 ./build/Sift /tmp/sift-events.parquet sift.yaml --analysis-mode jev
 ```
 
-The CLI override wins over the YAML value. Native is used when `analysis` is absent.
+The command line value has priority. If `analysis` is not present, Sift uses `native` mode.
 
-## Jev mode (experimental)
+## Jev mode
 
-Jev mode is an optional integration with the TypeSafe System One HTTP API. It is experimental.
+Jev mode uses the TypeSafe System One API. This document calls it the System One API. This mode is experimental.
 
-Sift computes deterministic descriptive measurements first, such as the current export count, the prior observation count, the prior mean, and the current-minus-prior-max. Jev then makes one narrow typed `choice` judgment over those precomputed facts. The judgment does not become a finding, rank, priority, or severity.
+Sift calculates descriptive measurements before it sends data to Jev. Jev receives the measurements and returns one typed `choice` judgment.
 
-The current `Event` schema has only a timestamp, an event type, and a primary entity ID. It carries almost no semantic resource context. The first Jev judgment is therefore an experimental characterization of measurements, not a rich semantic security judgment.
+A Jev judgment is not a finding, rank, priority, or severity.
 
-### Build support
+The current `Event` schema contains a timestamp, an event type, and a primary entity ID. It contains little semantic resource context. Thus, the first Jev judgment only characterizes the supplied measurements.
 
-Jev support is off by default. Enable it to build `sift_jev`:
+### Jev support
+
+CMake disables Jev support by default. To build `sift_jev`, use these commands:
 
 ```bash
 cmake -S . -B build -G Ninja -DSIFT_ENABLE_JEV=ON
 cmake --build build
 ```
 
-This uses libcurl and a header-only JSON library. When Jev support is off, `sift_jev` and its dependencies are not built, and native mode is unchanged. Selecting `jev` without support fails with a clear message.
+The Jev source uses libcurl and nlohmann/json. When you build Sift without Jev support, Sift does not use the Jev source files.
+
+If you select `jev` without Jev support, Sift stops and reports an error. Sift does not change to `native` mode.
 
 ### Credentials
 
-Jev mode reads the API key from the environment only:
+Set the TypeSafe API key in the environment:
 
 ```bash
 export TYPESAFE_API_KEY=...
 ```
 
-Do not put credentials in `sift.yaml`. Jev mode fails before any request when the key is missing. Native mode never reads the key.
+Do not write the API key in `sift.yaml`. If the key is not set, Jev mode stops before it sends a request. Native mode does not read the key.
 
-Optional Jev settings live in YAML:
+You can set optional Jev values in YAML:
 
 ```yaml
 analysis:
@@ -81,17 +87,19 @@ analysis:
     max_retries: 2
 ```
 
-The base endpoint defaults to `https://api.typesafe.ai`. Set `SIFT_TYPESAFE_BASE_URL` to redirect it, for example to a local mock server.
+The default API endpoint is `https://api.typesafe.ai`. For a local mock server, set `SIFT_TYPESAFE_BASE_URL`.
 
 ## Tests
+
+Run the normal test suite:
 
 ```bash
 ctest --test-dir build --output-on-failure
 ```
 
-Normal tests never make a live API call. Unit tests for Jev use a fake transport.
+Normal tests do not send a live API request. Jev unit tests use a fake transport.
 
-Live Jev tests require an explicit configure option, a runtime flag, and a real key:
+Live Jev tests need an explicit CMake option, a runtime flag, and a real API key:
 
 ```bash
 cmake -S . -B build -G Ninja -DSIFT_ENABLE_JEV=ON -DSIFT_RUN_LIVE_JEV_TESTS=ON
@@ -100,4 +108,4 @@ export SIFT_RUN_LIVE_JEV_TESTS=1
 ctest --test-dir build -L jev-live --output-on-failure
 ```
 
-Live tests make real, paid API calls.
+Live tests can use paid API capacity.
