@@ -24,7 +24,11 @@ add_library(sift_core STATIC
         src/analysis/daily_exports.cpp
         src/analysis/analysis_types.hpp
         src/analysis/feature_extraction.hpp
-        src/analysis/feature_extraction.cpp)
+        src/analysis/feature_extraction.cpp
+        src/analysis/analysis_runner.hpp
+        src/analysis/analysis_runner.cpp
+        src/reporting/text_reporter.hpp
+        src/reporting/text_reporter.cpp)
 target_include_directories(sift_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sift_core PUBLIC
         Arrow::arrow_shared

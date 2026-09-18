@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
 
-#include "src/analysis/daily_exports.hpp"
+#include "src/analysis/analysis_runner.hpp"
+#include "src/analysis/feature_extraction.hpp"
 #include "src/config/app_config.hpp"
 #include "src/config/cli_options.hpp"
 #include "src/ingestion/parquet_event_reader.hpp"
+#include "src/reporting/text_reporter.hpp"
 
 int main(int argc, char* argv[]) {
     const auto options_result = sift::parse_cli(argc, argv);
@@ -31,21 +33,20 @@ int main(int argc, char* argv[]) {
     }
 
     const auto& [schema, events] = *ingest_result;
-    std::cout << schema->ToString() << '\n';
-    std::cout << "events: " << events.size() << '\n';
+    const auto snapshots = sift::extract_features(events);
+    const std::string schema_text = schema->ToString();
 
     switch (config.analysis.mode) {
         case sift::AnalysisMode::native: {
-            if (!events.empty()) {
-                const auto counts = sift::count_daily_exports(events.events());
-                for (const auto& [entity_id, daily_counts] : counts) {
-                    std::cout << entity_id << " daily_exports:";
-                    for (const auto& [day, count] : daily_counts) {
-                        std::cout << ' ' << count;
-                    }
-                    std::cout << '\n';
-                }
+            const sift::AnalysisInput input{events.events(), snapshots};
+            const auto analysis =
+                sift::run_analysis(sift::AnalysisMode::native, input, nullptr);
+            if (!analysis.ok()) {
+                std::cerr << analysis.status().ToString() << '\n';
+                return 1;
             }
+            std::cout << sift::render_native_report(schema_text, snapshots,
+                                                    events.size());
             return 0;
         }
         case sift::AnalysisMode::jev:

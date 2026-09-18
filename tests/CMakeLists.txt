@@ -20,6 +20,14 @@ add_executable(feature_extraction_test feature_extraction_test.cpp)
 target_link_libraries(feature_extraction_test PRIVATE sift_core)
 add_test(NAME feature_extraction COMMAND feature_extraction_test)
 
+add_executable(analysis_runner_test analysis_runner_test.cpp)
+target_link_libraries(analysis_runner_test PRIVATE sift_core)
+add_test(NAME analysis_runner COMMAND analysis_runner_test)
+
+add_executable(text_reporter_test text_reporter_test.cpp)
+target_link_libraries(text_reporter_test PRIVATE sift_core)
+add_test(NAME text_reporter COMMAND text_reporter_test)
+
 add_executable(daily_exports_test daily_exports_test.cpp)
 target_link_libraries(daily_exports_test PRIVATE sift_core)
 add_test(NAME daily_exports COMMAND daily_exports_test)
